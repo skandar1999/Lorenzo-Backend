@@ -74,6 +74,52 @@ router.get('/getallproduct', (req, res) => {
     });
 });
 
+
+router.get('/getpoloproducts', (req, res) => {
+  const targetCategory = 'POLO'; // Change this to the actual category name
+
+  Product.find({ categorie: targetCategory })
+    .then(products => {
+      console.log('Polo products:', products);
+      res.json(products);
+    })
+    .catch(error => {
+      console.error('Error retrieving polo products:', error);
+      res.status(500).send('Error retrieving polo products');
+    });
+});
+
+
+router.get('/getchemiseproducts', (req, res) => {
+  const targetCategory = 'chemise'; // Change this to the actual category name
+
+  Product.find({ categorie: targetCategory })
+    .then(products => {
+      console.log('chemise products:', products);
+      res.json(products);
+    })
+    .catch(error => {
+      console.error('Error retrieving chemise products:', error);
+      res.status(500).send('Error retrieving chemise products');
+    });
+});
+
+
+
+router.get('/get-shirt-products', (req, res) => {
+  const targetCategory = 'tshirt'; // Change this to the actual category name
+
+  Product.find({ categorie: targetCategory })
+    .then(products => {
+      console.log('tshirt products:', products);
+      res.json(products);
+    })
+    .catch(error => {
+      console.error('Error retrieving tshirt products:', error);
+      res.status(500).send('Error retrieving tshirt products');
+    });
+});
+
 router.delete('/deleteProduct/:id', (req, res) => { 
   const myId = req.params.id;
 
