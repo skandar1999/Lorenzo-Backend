@@ -1,13 +1,11 @@
-const express = require('express');
-const bcrypt =require ('bcrypt');
-const jwt =require ('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const express = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
-const User = require('../models/user');
-
-
+const User = require("../models/user");
 
 /*
 router.post('/add', (req, res) => {
@@ -25,14 +23,13 @@ router.post('/add', (req, res) => {
 });
 */
 
-
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const data = req.body;
-    
+
     const existingUser = await User.findOne({ email: data.email });
     if (existingUser) {
-      return res.status(409).send('Email already exists');
+      return res.status(409).send("Email already exists");
     }
 
     // Create a new user with the provided data
@@ -55,241 +52,230 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json(savedUser);
   } catch (error) {
-    console.error('Error during registration:', error);
-    res.status(500).send('Internal server error');
+    console.error("Error during registration:", error);
+    res.status(500).send("Internal server error");
   }
 });
 
-  router.post('/login', async (req, res) => {
-    try {
-      const data = req.body;
-      const user = await User.findOne({ email: data.email });
-  
-      if (!user) {
-          return res.status(404).send('Email or password is incorrect');
-      }
-  
-      const validPass = await bcrypt.compare(data.password, user.password);
-  
-      if (!validPass) {
-          return res.status(401).send('Email or password is incorrect');
-      }
-  
-      const payload = {
-        id: user._id, // User ID
-        name: user.name,
-        lastname: user.lastname,
-        phone: user.phone,
-        email: user.email,
-        image: user.image,
-        // Include other user-related data as needed
-    };
-    
-    const token = jwt.sign(payload, 'yourSecretKey', { expiresIn: '1h' });
-    
-  
-      res.status(200).send({ token: token }); // Return 'token' instead of 'mytoken'
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).send('Internal server error');
+router.post("/login", async (req, res) => {
+  try {
+    const data = req.body;
+    const user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      return res.status(404).send("Email or password is incorrect");
     }
-  });
-  
 
- 
+    const validPass = await bcrypt.compare(data.password, user.password);
 
+    if (!validPass) {
+      return res.status(401).send("Email or password is incorrect");
+    }
 
+    const payload = {
+      id: user._id, // User ID
+      name: user.name,
+      lastname: user.lastname,
+      phone: user.phone,
+      email: user.email,
+      image: user.image,
+      // Include other user-related data as needed
+    };
 
-router.get('/getall', (req, res) => {
-  User.find({ name: { $regex: 'skandar', $options: 'i' } })
-    .then(users => {
-      console.log('All users:', users);
+    const token = jwt.sign(payload, "yourSecretKey", { expiresIn: "1h" });
+
+    res.status(200).send({ token: token }); // Return 'token' instead of 'mytoken'
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+router.get("/getall", (req, res) => {
+  User.find({ name: { $regex: "skandar", $options: "i" } })
+    .then((users) => {
+      console.log("All users:", users);
       res.json(users);
     })
-    .catch(error => {
-      console.error('Error retrieving users:', error);
-      res.status(500).send('Error retrieving users');
+    .catch((error) => {
+      console.error("Error retrieving users:", error);
+      res.status(500).send("Error retrieving users");
     });
 });
 
-
-router.get('/userdetails/:userId', async (req, res) => {
-    try {
-        const userId = req.params.userId;
-
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('Error fetching user details:', error);
-        res.status(500).send('Error fetching user details');
-    }
-});
-
-
-
-router.get('/userdetailsemail/:email', async (req, res) => {
+router.get("/userdetails/:userId", async (req, res) => {
   try {
-    const email = req.params.email;
-    console.log('Email parameter:', email); // Add this line for debugging
+    const userId = req.params.userId;
 
-    
-    const user = await User.findOne({ email: email });
-      if (!user) {
-          return res.status(404).send('User not found');
-      }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
 
-      res.status(200).json(user);
+    res.status(200).json(user);
   } catch (error) {
-      console.error('Error fetching user details:', error);
-      res.status(500).send('Error fetching user details');
+    console.error("Error fetching user details:", error);
+    res.status(500).send("Error fetching user details");
   }
 });
 
+router.get("/userdetailsemail/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+    console.log("Email parameter:", email); // Add this line for debugging
 
-
-
-router.put('/updatepassword/:id', async (req, res) => {
-    const userId = req.params.id;
-    const { newPassword } = req.body;
-  
-    try {
-      const user = await User.findById(userId);
-  
-      if (!user) {
-        return res.status(404).send('User not found');
-      }
-  
-      // Hash the new password before updating
-      const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
-  
-      user.password = hashedPassword;
-      await user.save();
-  
-      console.log('Password updated:', user);
-      res.send('Password updated successfully');
-    } catch (error) {
-      console.error('Error updating password:', error);
-      res.status(500).send('Error updating password');
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(404).send("User not found");
     }
-  });
 
-router.put('/updateName/:id', (req, res) => {
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).send("Error fetching user details");
+  }
+});
+
+router.put("/updatepassword/:id", async (req, res) => {
   const userId = req.params.id;
-  const { nameName } = req.body;
+  const { newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Hash the new password before updating
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
+
+    user.password = hashedPassword;
+    await user.save();
+
+    console.log("Password updated:", user);
+    res.send("Password updated successfully");
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).send("Error updating password");
+  }
+});
+
+router.put("/updateUserData/:id", (req, res) => {
+  const userId = req.params.id;
+  const { NewName, NewLastName, NewPhone } = req.body;
 
   User.findById(userId)
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        return res.status(404).send('User not found');
+        return res.status(404).send("User not found");
       }
 
-      user.name = nameName;
+      user.name = NewName;
+      user.lastname = NewLastName;
+      user.phone = NewPhone;
       return user.save();
     })
-    .then(updatedUser => {
-      console.log('Name updated:', updatedUser);
-      res.send('Name updated successfully');
+    .then((updatedUser) => {
+      console.log("data updated:", updatedUser);
+      res.json({ message: "User data updated successfully" }); // Send JSON response
     })
-    .catch(error => {
-      console.error('Error updating name:', error);
-      res.status(500).send('Error updating name');
+    .catch((error) => {
+      console.error("Error updating user data:", error);
+      res.status(500).json({ message: "Error updating user data" }); // Send JSON response
     });
 });
 
-router.get('/getById/:id', (req, res) => {
+router.get("/getById/:id", (req, res) => {
   const myId = req.params.id;
 
   User.findById(myId)
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        return res.status(404).send('User not found');
+        return res.status(404).send("User not found");
       }
 
       res.json(user);
     })
-    .catch(err => {
-      console.error('Error retrieving user:', err);
-      res.status(500).send('Error retrieving user');
+    .catch((err) => {
+      console.error("Error retrieving user:", err);
+      res.status(500).send("Error retrieving user");
     });
 });
 
-router.delete('/deleteUser/:id', (req, res) => {
+router.delete("/deleteUser/:id", (req, res) => {
   const myId = req.params.id;
 
   User.findByIdAndDelete(myId)
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        return res.status(404).send('User not found');
+        return res.status(404).send("User not found");
       }
 
       res.json(user);
     })
-    .catch(err => {
-      console.error('Error deleting user:', err);
-      res.status(500).send('Error deleting user');
+    .catch((err) => {
+      console.error("Error deleting user:", err);
+      res.status(500).send("Error deleting user");
     });
 });
 
+router.post("/reset-password", async (req, res) => {
+  try {
+    const data = req.body;
+    const user = await User.findOne({ email: data.email });
 
-router.post('/reset-password', async (req, res) => {
-    try {
-        const data = req.body;
-        const user = await User.findOne({ email: data.email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: `Adresse email n'existe pas: ${data.email}` });
+    }
 
-        if (!user) {
-            return res.status(404).json({ error: `Adresse email n'existe pas: ${data.email}` });
-        }
+    // Generate a new password
+    const newPassword = Math.random().toString(36).slice(-8);
 
-        // Generate a new password
-        const newPassword = Math.random().toString(36).slice(-8);
+    // Hash the new password using bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Hash the new password using bcrypt
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Update user's password in the database
+    user.password = hashedPassword;
+    await user.save();
 
-        // Update user's password in the database
-        user.password = hashedPassword;
-        await user.save();
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: "sabriskandar5@gmail.com", // Your Gmail email address
+        pass: "kqioggxxhollqcxb", // Your Gmail password or app-specific password
+      },
+    });
 
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: 'sabriskandar5@gmail.com', // Your Gmail email address
-                pass: 'kqioggxxhollqcxb' // Your Gmail password or app-specific password
-            }
-        });
-
-        const mailOptions = {
-            from: 'sabriskandar5@gmail.com',
-            to: data.email,
-            subject: 'Réinitialisation du mot de passe',
-            html: `
+    const mailOptions = {
+      from: "sabriskandar5@gmail.com",
+      to: data.email,
+      subject: "Réinitialisation du mot de passe",
+      html: `
         <p>Bonjour,</p>
         <p>Nous avons récemment mis à jour nos systèmes de sécurité et, pour garantir la sécurité de votre compte, nous avons généré un nouveau mot de passe pour vous.</p>
         <p>Votre nouveau mot de passe est : <strong>${newPassword}</strong></p>
         <p>Veuillez noter que ce mot de passe est sensible à la casse et doit être saisi exactement tel qu'il apparaît ci-dessus lors de votre prochaine connexion à notre service. Nous vous recommandons également de changer ce mot de passe dès que possible pour un mot de passe que vous seul connaissez.</p>
         <p>Cordialement,<br>L'équipe de sécurité</p>
         <a href="http://localhost:4200/login" style="display:inline-block; background-color: dark; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Aller sur notre site web</a>
-    `
-};
+    `,
+    };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return res.status(500).json('Error sending email');
-            }
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json("Error sending email");
+      }
 
-            console.log('Email sent:', info.response);
-            res.status(200).json('Sent');
-        });
-    } catch (error) {
-        console.error('Error resetting password:', error);
-        res.status(500).json('Error resetting password');
-    }
+      console.log("Email sent:", info.response);
+      res.status(200).json("Sent");
+    });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json("Error resetting password");
+  }
 });
-
 
 module.exports = router;
