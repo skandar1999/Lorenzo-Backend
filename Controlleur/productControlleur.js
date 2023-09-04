@@ -70,6 +70,33 @@ router.get("/getallproduct", (req, res) => {
     });
 });
 
+router.get("/getallproductnopromo", (req, res) => {
+  Product.find({ promotion: false }) // Add a query to filter products with promotion=false
+    .then((products) => {
+      console.log("All products:", products);
+      res.json(products);
+    })
+    .catch((error) => {
+      console.error("Error retrieving products:", error);
+      res.status(500).send("Error retrieving products");
+    });
+});
+
+
+router.get("/getallproductwithpromo", (req, res) => {
+  Product.find({ promotion: true }) // Add a query to filter products with promotion=false
+    .then((products) => {
+      console.log("All products:", products);
+      res.json(products);
+    })
+    .catch((error) => {
+      console.error("Error retrieving products:", error);
+      res.status(500).send("Error retrieving products");
+    });
+});
+
+
+
 router.get("/getpoloproducts", (req, res) => {
   const targetCategory = "POLO"; // Change this to the actual category name
 
@@ -144,5 +171,19 @@ router.get("/getProductById/:id", (req, res) => {
       res.status(500).send("Error retrieving product");
     });
 });
+
+
+// Updated route to count the total number of products using async/await
+router.get("/countProducts", async (req, res) => {
+  try {
+    const totalCount = await Product.countDocuments({});
+    res.json({ totalCount });
+  } catch (error) {
+    console.error("Error counting products:", error);
+    res.status(500).json({ error: "Error counting products" });
+  }
+});
+
+
 
 module.exports = router;

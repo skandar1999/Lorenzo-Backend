@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+
+  role: {
+    type: String,
+    default: 'user'
+  },
+
   image: {
     type: String,
     default: 'user.png' // Set a default image filename

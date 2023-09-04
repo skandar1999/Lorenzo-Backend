@@ -75,6 +75,7 @@ router.post("/login", async (req, res) => {
     const payload = {
       id: user._id, // User ID
       name: user.name,
+      role: user.role,
       lastname: user.lastname,
       phone: user.phone,
       email: user.email,
@@ -82,7 +83,7 @@ router.post("/login", async (req, res) => {
       // Include other user-related data as needed
     };
 
-    const token = jwt.sign(payload, "yourSecretKey", { expiresIn: "1h" });
+    const token = jwt.sign(payload, "%kernel.project_dir%/config/jwt/private.pem", { expiresIn: "10h" });
 
     res.status(200).send({ token: token }); // Return 'token' instead of 'mytoken'
   } catch (error) {
@@ -102,6 +103,19 @@ router.get("/getall", (req, res) => {
       res.status(500).send("Error retrieving users");
     });
 });
+
+// router.get("/getall", (req, res) => {
+//   User.find({ name: { $regex: "skandar", $options: "i" } })
+//     .then((users) => {
+//       console.log("All users:", users);
+//       res.json(users);
+//     })
+//     .catch((error) => {
+//       console.error("Error retrieving users:", error);
+//       res.status(500).send("Error retrieving users");
+//     });
+// });
+
 
 router.get("/userdetails/:userId", async (req, res) => {
   try {
@@ -161,7 +175,7 @@ router.put("/updatepassword/:id", async (req, res) => {
   }
 });
 
-router.put("/updateUserData/:id", (req, res) => {
+router.put("/updateuserdata/:id", (req, res) => {
   const userId = req.params.id;
   const { NewName, NewLastName, NewPhone } = req.body;
 

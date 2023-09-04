@@ -6,9 +6,16 @@ const ProductSchema = new mongoose.Schema({
     required: true
   },
   prix: {
-    type: String,
+    type: Number,
     required: true,
   },
+
+  promoprix: {
+    type: Number,
+    required: false,
+
+  },
+
   description: {
     type: String,
     required: true
@@ -18,7 +25,12 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: true
   },
- 
+
+  promotion: {
+    type: Boolean,
+    required: true
+  },
+
   image: {
     type: String,
   }
