@@ -184,6 +184,6 @@ router.get("/countProducts", async (req, res) => {
   }
 });
 
-
+    
 
 module.exports = router;
