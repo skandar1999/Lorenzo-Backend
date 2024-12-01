@@ -13,7 +13,6 @@ const ProductSchema = new mongoose.Schema({
   promoprix: {
     type: Number,
     required: false,
-
   },
 
   description: {
@@ -33,6 +32,12 @@ const ProductSchema = new mongoose.Schema({
 
   image: {
     type: String,
+  },
+
+  disponible: {
+    type: Boolean,
+    default: true 
+
   }
 });
 

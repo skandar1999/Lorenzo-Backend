@@ -39,7 +39,6 @@ router.post("/register", async (req, res) => {
       phone: data.phone,
       email: data.email,
       password: data.password,
-      // No need to set the 'image' attribute here, it will use the default value 'user.png'
     });
 
     // Hash the password before saving
@@ -57,7 +56,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+  router.post("/login", async (req, res) => {
   try {
     const data = req.body;
     const user = await User.findOne({ email: data.email });
@@ -73,27 +72,28 @@ router.post("/login", async (req, res) => {
     }
 
     const payload = {
-      id: user._id, // User ID
+      id: user._id, 
       name: user.name,
       role: user.role,
       lastname: user.lastname,
       phone: user.phone,
       email: user.email,
       image: user.image,
-      // Include other user-related data as needed
     };
 
     const token = jwt.sign(payload, "%kernel.project_dir%/config/jwt/private.pem", { expiresIn: "10h" });
 
-    res.status(200).send({ token: token }); // Return 'token' instead of 'mytoken'
+    res.status(200).send({ token: token }); 
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).send("Internal server error");
   }
 });
 
+
+
 router.get("/getall", (req, res) => {
-  User.find({ name: { $regex: "skandar", $options: "i" } })
+  User.find({})
     .then((users) => {
       console.log("All users:", users);
       res.json(users);
@@ -104,17 +104,7 @@ router.get("/getall", (req, res) => {
     });
 });
 
-// router.get("/getall", (req, res) => {
-//   User.find({ name: { $regex: "skandar", $options: "i" } })
-//     .then((users) => {
-//       console.log("All users:", users);
-//       res.json(users);
-//     })
-//     .catch((error) => {
-//       console.error("Error retrieving users:", error);
-//       res.status(500).send("Error retrieving users");
-//     });
-// });
+
 
 
 router.get("/userdetails/:userId", async (req, res) => {
@@ -133,11 +123,11 @@ router.get("/userdetails/:userId", async (req, res) => {
   }
 });
 
+
 router.get("/userdetailsemail/:email", async (req, res) => {
   try {
     const email = req.params.email;
-    console.log("Email parameter:", email); // Add this line for debugging
-
+    console.log("Email parameter:", email); 
     const user = await User.findOne({ email: email });
     if (!user) {
       return res.status(404).send("User not found");
@@ -150,25 +140,36 @@ router.get("/userdetailsemail/:email", async (req, res) => {
   }
 });
 
+
 router.put("/updatepassword/:id", async (req, res) => {
   const userId = req.params.id;
-  const { newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body; // Extract both current and new passwords from the request body
 
   try {
+    // Find the user by their ID
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).send("User not found");
     }
 
-    // Hash the new password before updating
-    const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
+    // Compare the entered current password with the stored password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
+    if (!isPasswordValid) {
+      // If current password is incorrect, return an error
+      return res.status(400).send("Incorrect current password");
+    }
+
+    // If current password is correct, hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
     user.password = hashedPassword;
     await user.save();
 
     console.log("Password updated:", user);
-    res.send("Password updated successfully");
+    res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error("Error updating password:", error);
     res.status(500).send("Error updating password");
@@ -178,13 +179,11 @@ router.put("/updatepassword/:id", async (req, res) => {
 router.put("/updateuserdata/:id", (req, res) => {
   const userId = req.params.id;
   const { NewName, NewLastName, NewPhone } = req.body;
-
   User.findById(userId)
     .then((user) => {
       if (!user) {
         return res.status(404).send("User not found");
       }
-
       user.name = NewName;
       user.lastname = NewLastName;
       user.phone = NewPhone;
@@ -192,11 +191,11 @@ router.put("/updateuserdata/:id", (req, res) => {
     })
     .then((updatedUser) => {
       console.log("data updated:", updatedUser);
-      res.json({ message: "User data updated successfully" }); // Send JSON response
+      res.json({ message: "User data updated successfully" }); 
     })
     .catch((error) => {
       console.error("Error updating user data:", error);
-      res.status(500).json({ message: "Error updating user data" }); // Send JSON response
+      res.status(500).json({ message: "Error updating user data" });
     });
 });
 
@@ -258,7 +257,7 @@ router.post("/reset-password", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "sabriskandar5@gmail.com", // Your Gmail email address
+        user: "sabriskandar5@gmail.com", 
         pass: "kqioggxxhollqcxb", // Your Gmail password or app-specific password
       },
     });
@@ -289,6 +288,18 @@ router.post("/reset-password", async (req, res) => {
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json("Error resetting password");
+  }
+});
+
+
+
+router.get("/countUsers", async (req, res) => {
+  try {
+    const Count = await User.countDocuments({});
+    res.json({ Count });
+  } catch (error) {
+    console.error("Error counting Users:", error);
+    res.status(500).json({ error: "Error counting Users" });
   }
 });
 

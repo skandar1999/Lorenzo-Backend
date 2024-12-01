@@ -1,9 +1,9 @@
 const express = require("express");
-const router = express.Router(); // Change 'routeur' to 'router'
+const router = express.Router(); 
 
 const Product = require("../models/product");
 const User = require("../models/user");
-const Reservation = require("../models/Reservation"); // Import the Reservation model
+const Reservation = require("../models/Reservation"); 
 
 const multer = require("multer");
 
@@ -21,7 +21,7 @@ const upload = multer({ storage: mystorage });
 router.post("/addproduct", upload.any("image"), (req, res) => {
   const productData = req.body;
   const product = new Product(productData);
-  product.image = req.files[0].filename; // Use the filename from the uploaded file
+  product.image = req.files[0].filename; 
   product
     .save()
     .then((savedProduct) => {
@@ -38,7 +38,6 @@ router.put("/updateproduct/:id", upload.any("image"), (req, res) => {
   const productId = req.params.id;
   const updatedProductData = req.body;
 
-  // Update the image only if a new image is uploaded
   if (req.files && req.files.length > 0) {
     updatedProductData.image = req.files[0].filename;
   }
@@ -65,13 +64,13 @@ router.get("/getallproduct", (req, res) => {
       res.json(products);
     })
     .catch((error) => {
-      console.error("Error retrieving products:", error); // Change 'users' to 'products'
+      console.error("Error retrieving products:", error); 
       res.status(500).send("Error retrieving products");
     });
 });
 
 router.get("/getallproductnopromo", (req, res) => {
-  Product.find({ promotion: false }) // Add a query to filter products with promotion=false
+  Product.find({ promotion: false }) 
     .then((products) => {
       console.log("All products:", products);
       res.json(products);
@@ -84,7 +83,7 @@ router.get("/getallproductnopromo", (req, res) => {
 
 
 router.get("/getallproductwithpromo", (req, res) => {
-  Product.find({ promotion: true }) // Add a query to filter products with promotion=false
+  Product.find({ promotion: true }) 
     .then((products) => {
       console.log("All products:", products);
       res.json(products);
@@ -98,7 +97,7 @@ router.get("/getallproductwithpromo", (req, res) => {
 
 
 router.get("/getpoloproducts", (req, res) => {
-  const targetCategory = "POLO"; // Change this to the actual category name
+  const targetCategory = "POLO"; 
 
   Product.find({ categorie: targetCategory })
     .then((products) => {
@@ -112,7 +111,7 @@ router.get("/getpoloproducts", (req, res) => {
 });
 
 router.get("/getchemiseproducts", (req, res) => {
-  const targetCategory = "chemise"; // Change this to the actual category name
+  const targetCategory = "chemise"; 
 
   Product.find({ categorie: targetCategory })
     .then((products) => {
@@ -126,7 +125,7 @@ router.get("/getchemiseproducts", (req, res) => {
 });
 
 router.get("/get-shirt-products", (req, res) => {
-  const targetCategory = "tshirt"; // Change this to the actual category name
+  const targetCategory = "tshirt"; 
 
   Product.find({ categorie: targetCategory })
     .then((products) => {
@@ -158,22 +157,21 @@ router.delete("/deleteProduct/:id", (req, res) => {
 router.get("/getProductById/:id", (req, res) => {
   const myId = req.params.id;
 
-  Product.findById(myId) // Remove unnecessary object wrapping
+  Product.findById(myId)
     .then((product) => {
       if (!product) {
-        return res.status(404).send("Product not found"); // Change 'product not found' to 'Product not found'
+        return res.status(404).send("Product not found"); 
       }
 
       res.json(product);
     })
     .catch((err) => {
-      console.error("Error retrieving product:", err); // Change 'user' to 'product'
+      console.error("Error retrieving product:", err); 
       res.status(500).send("Error retrieving product");
     });
 });
 
 
-// Updated route to count the total number of products using async/await
 router.get("/countProducts", async (req, res) => {
   try {
     const totalCount = await Product.countDocuments({});
@@ -184,6 +182,6 @@ router.get("/countProducts", async (req, res) => {
   }
 });
 
-    
+
 
 module.exports = router;

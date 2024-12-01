@@ -1,33 +1,34 @@
 const mongoose = require('mongoose');
 
 const reservationSchema = new mongoose.Schema({
-  
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     required: true
   },
-
-
   userName: {
     type: String,
   },
-
   userLastName: {
     type: String,
   },
-
   UserTelephone: {
     type: String,
   },
-
   UserRegion: {
     type: String,
   },
-
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  isConfirmed: { 
+    type: Boolean,
+    default: false 
+  },
+  isCompleted: { 
+    type: Boolean,
+    default: false 
   }
 });
 

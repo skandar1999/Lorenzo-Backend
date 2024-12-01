@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
 
   image: {
     type: String,
-    default: 'user.png' // Set a default image filename
+    default: 'user.png' 
   }
 });
 
