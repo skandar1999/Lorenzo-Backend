@@ -70,14 +70,31 @@ router.delete('/deletereservation/:reservationId', async (req, res) => {
 
 // Route to display all reservations
 router.get('/allCommande', async (req, res) => {
-    try {
-        const reservations = await Reservation.find(); 
-        res.status(200).json(reservations); 
-    } catch (error) {
-        console.error('Error retrieving reservations:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving reservations' });
-    }
+  try {
+      // Fetch all reservations
+      const reservations = await Reservation.find();
+
+      // Filter reservations to include only those with products where disponible is false
+      const filteredReservations = await Promise.all(
+          reservations.map(async (reservation) => {
+              const product = await Product.findById(reservation.productId);
+              if (product && !product.disponible) {
+                  return reservation; // Include only if the product is not disponible
+              }
+              return null; // Exclude if the product is disponible
+          })
+      );
+
+      // Remove null values from the filtered list
+      const validReservations = filteredReservations.filter((item) => item !== null);
+
+      res.status(200).json(validReservations); // Return the filtered reservations
+  } catch (error) {
+      console.error('Error retrieving reservations:', error);
+      res.status(500).json({ error: 'An error occurred while retrieving reservations' });
+  }
 });
+
 
 router.put('/updateReservation/:id', async (req, res) => {
     const { isConfirmed, isCompleted } = req.body; 

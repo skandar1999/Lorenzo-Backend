@@ -303,4 +303,28 @@ router.get("/countUsers", async (req, res) => {
   }
 });
 
+
+
+
+router.put('/UpdateRole/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role: 'admin' },
+      { new: true } 
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'An error occurred while updating the user' });
+  }
+});
+
 module.exports = router;

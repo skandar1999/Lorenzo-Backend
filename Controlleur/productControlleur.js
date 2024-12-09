@@ -19,6 +19,8 @@ const mystorage = multer.diskStorage({
 const upload = multer({ storage: mystorage });
 
 router.post("/addproduct", upload.any("image"), (req, res) => {
+  console.log('Request body:', req.body);
+  console.log('Uploaded file:', req.file);
   const productData = req.body;
   const product = new Product(productData);
   product.image = req.files[0].filename; 
@@ -182,6 +184,54 @@ router.get("/countProducts", async (req, res) => {
   }
 });
 
+router.get("/productById/:id", async (req, res) => {
+  try {
+    const Id = req.params.id;
 
+    const product = await Product.findById(Id);
+    if (!product) {
+      return res.status(404).send("Product not found");
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    res.status(500).send("Error fetching product details");
+  }
+});
+router.put('/UpdateDisponibleProduct/:reservationId', async (req, res) => {
+  const { reservationId } = req.params;
+
+  try {
+    // Find the reservation by ID
+    const reservation = await Reservation.findById(reservationId);
+
+    if (!reservation) {
+      return res.status(404).json({ message: 'Reservation not found' });
+    }
+
+    // Extract productId from the reservation
+    const productId = reservation.productId;
+
+    // Update the product's disponible status (set it to true)
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { $set: { disponible: true } }, // Update the disponible status to true
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Now delete the reservation after the product status has been updated
+    await Reservation.findByIdAndDelete(reservationId);
+
+    res.status(200).json({ message: 'Reservation canceled, product status updated successfully' });
+  } catch (error) {
+    console.error('Error updating product status and deleting reservation:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;
